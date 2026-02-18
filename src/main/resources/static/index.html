@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SarangGPT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            padding: 15px;
+            background-color: #111827;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid #1f2937;
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 15px;
+            border-radius: 15px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .user {
+            align-self: flex-end;
+            background-color: #2563eb;
+        }
+
+        .bot {
+            align-self: flex-start;
+            background-color: #1e293b;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background-color: #111827;
+            border-top: 1px solid #1f2937;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .input-area button {
+            margin-left: 10px;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background-color: #2563eb;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .input-area button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .typing {
+            font-size: 12px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    SarangGPT 🤖
+</div>
+
+<div class="chat-container" id="chat"></div>
+
+<div class="input-area">
+    <input type="text" id="message" placeholder="Ask SarangGPT anything..." onkeypress="handleKey(event)" />
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+
+function handleKey(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+}
+
+function addMessage(content, className) {
+    const chat = document.getElementById("chat");
+    const msg = document.createElement("div");
+    msg.className = "message " + className;
+    msg.innerText = content;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function sendMessage() {
+    const input = document.getElementById("message");
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    addMessage(message, "user");
+    input.value = "";
+
+    const typingIndicator = document.createElement("div");
+    typingIndicator.className = "message bot typing";
+    typingIndicator.innerText = "SarangGPT is typing...";
+    document.getElementById("chat").appendChild(typingIndicator);
+
+    fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+    })
+    .then(res => res.text())
+    .then(data => {
+        typingIndicator.remove();
+        addMessage(data, "bot");
+    })
+    .catch(err => {
+        typingIndicator.remove();
+        addMessage("Error connecting to server.", "bot");
+    });
+}
+
+</script>
+
+</body>
+</html>

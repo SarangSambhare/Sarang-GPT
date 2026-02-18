@@ -1,17 +1,16 @@
-# Use official OpenJDK image
+# Use Maven image to build
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+# Use smaller image to run app
 FROM eclipse-temurin:17-jdk-alpine
 
-# Set working directory
 WORKDIR /app
+COPY --from=build /app/target/demo-0.0.1-SNAPSHOT app.jar
 
-# Copy project files
-COPY . .
-
-# Build the application
-RUN ./mvnw clean package -DskipTests
-
-# Expose port
 EXPOSE 8080
 
-# Run the jar file
-CMD ["java", "-jar", "target/demo-0.0.1-SNAPSHOT"]
+CMD ["java", "-jar", "app.jar"]
